@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: smart-ecommerce-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2025-06-09T18:15:36.069664',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Scrape \u2192 Analyze
+      \u2192 Enrich product data", "name": "Smart eCommerce Pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22}
+spec:
+  entrypoint: smart-ecommerce-pipeline
+  templates:
+  - name: analysis
+    container:
+      command: [python3, Analyse/simple_analyzer.py]
+      image: ayman909/ecom-smart:latest
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+  - name: llm-enrichment
+    container:
+      command: [python3, test_llm_enricher.py]
+      image: ayman909/ecom-smart:latest
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+  - name: scraper
+    container:
+      command: [python3, test_agents.py]
+      image: ayman909/ecom-smart:latest
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+  - name: smart-ecommerce-pipeline
+    dag:
+      tasks:
+      - name: analysis
+        template: analysis
+        dependencies: [scraper]
+      - name: llm-enrichment
+        template: llm-enrichment
+        dependencies: [analysis]
+      - {name: scraper, template: scraper}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner
