@@ -1,0 +1,53 @@
+name: Compile and Upload Kubeflow Pipeline
+
+on:
+  push:
+    paths:
+      - '**/*.py'
+      - '.github/workflows/deploy_pipeline.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🧾 Checkout repository
+      uses: actions/checkout@v3
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 🧪 Install dependencies (KFP only)
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install kfp
+
+    - name: 🛠️ Compile pipeline
+      run: |
+        source venv/bin/activate
+        python3 compile_pipeline.py
+
+    - name: 📦 Set output file
+      id: pipeline
+      run: echo "file=smart_pipeline.yaml" >> $GITHUB_OUTPUT
+
+    - name: 🛡️ Set up SSH agent
+      uses: webfactory/ssh-agent@v0.8.1
+      with:
+        ssh-private-key: ${{ secrets.AZURE_VM_SSH_KEY }}
+
+    - name: 📤 Copy pipeline to Azure VM
+      run: |
+        scp -o StrictHostKeyChecking=no ${{ steps.pipeline.outputs.file }} ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/home/${{ secrets.AZURE_VM_USER }}/kfp_pipeline/
+
+    - name: 🚀 Trigger pipeline upload on VM
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
+          cd ~/kfp_pipeline
+          source venv310/bin/activate
+          python3 upload_pipeline.py --pipeline_path smart_pipeline.yaml --pipeline_name "Smart eCommerce Pipeline"
+        EOF
