@@ -36,7 +36,7 @@ jobs:
       run: echo "file=smart_pipeline.yaml" >> $GITHUB_OUTPUT
 
     - name: 🛡️ Set up SSH agent
-      uses: webfactory/ssh-agent@v0.8.1
+      uses: webfactory/ssh-agent@v0.5.4
       with:
         ssh-private-key: ${{ secrets.AZURE_VM_SSH_KEY }}
 
