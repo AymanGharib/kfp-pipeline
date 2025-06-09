@@ -71,6 +71,5 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
           cd ~/kfp_pipeline
-          source venv310/bin/activate
-          python3 upload_pipeline.py --pipeline_path smart_pipeline.yaml --pipeline_name "Smart eCommerce Pipeline"
+          
         EOF
