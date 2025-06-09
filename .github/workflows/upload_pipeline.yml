@@ -7,7 +7,28 @@ on:
       - '.github/workflows/upload_pipeline.yml'
 
 jobs:
-  build-and-deploy:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📦 Checkout Smart-eCommerce-Intelligence repo
+      uses: actions/checkout@v3
+      with:
+        repository: Iz-Amine/Smart-eCommerce-Intelligence
+        path: ecom-project
+
+    - name: 🔑 Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ayman909
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: 🛠️ Build and Push Docker image
+      run: |
+        cd ecom-project
+        docker build -t ayman909/ecom-smart:latest .
+        docker push ayman909/ecom-smart:latest
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -49,6 +70,6 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
           cd ~/kfp_pipeline
-          
-          
+          source venv310/bin/activate
+          python3 upload_pipeline.py --pipeline_path smart_pipeline.yaml --pipeline_name "Smart eCommerce Pipeline"
         EOF
