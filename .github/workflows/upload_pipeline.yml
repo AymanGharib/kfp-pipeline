@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '**/*.py'
-      - '.github/workflows/deploy_pipeline.yml'
+      - '.github\workflows\upload_pipeline.yml'
 
 jobs:
   build-and-deploy:
