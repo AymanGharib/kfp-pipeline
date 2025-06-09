@@ -43,6 +43,7 @@ jobs:
     - name: 📤 Copy pipeline to Azure VM
       run: |
         scp -o StrictHostKeyChecking=no ${{ steps.pipeline.outputs.file }} ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/home/${{ secrets.AZURE_VM_USER }}/kfp_pipeline/
+        scp -o StrictHostKeyChecking=no upload_pipeline.py ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_HOST }}:/home/${{ secrets.AZURE_VM_USER }}/kfp_pipeline/
 
     - name: 🚀 Trigger pipeline upload on VM
       run: |
