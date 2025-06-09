@@ -1,5 +1,5 @@
 name: Compile and Upload Kubeflow Pipeline
-// test
+#test
 on:
   push:
     paths:
